@@ -160,7 +160,11 @@ function membercenter() {
     curl -m 10 -X POST -sA "$UA" -b $workdir/cookie "https://act.10010.com/SigninApp/signin/getGoldTotal"
     echo && echo
     curl -m 10 -X POST -sA "$UA" -b $workdir/cookie "https://act.10010.com/SigninApp/signin/bannerAdPlayingLogo"
-    
+    ## 每日领取1G流量日包
+    curl -m 10 -X POST -sA "$UA" -b $workdir/cookie "https://act.10010.com/SigninApp/doTask/finishVideo"
+    curl -m 10 -X POST -sA "$UA" -b $workdir/cookie "https://act.10010.com/SigninApp/doTask/getTaskInfo"
+    curl -m 10 -X POST -sA "$UA" -b $workdir/cookie "https://act.10010.com/SigninApp/doTask/getPrize"
+
     # 三次金币抽奖， 每日最多可花费金币执行十三次
     echo && echo
     usernumberofjsp=$(curl -m 10 -sA "$UA" -b $workdir/cookie https://m.client.10010.com/dailylottery/static/textdl/userLogin | grep -oE "encryptmobile=\w*" | awk -F"encryptmobile=" '{print $2}'| head -n1)
@@ -359,9 +363,9 @@ function tgbotinfo() {
     [[ $sendit == "sendit" ]] && curl -m 10 -sX POST "https://api.telegram.org/bot$token/sendMessage" -d "chat_id=$chat_id&text=$text" >/dev/null; sleep 3
     
     # hfgoactive
-    text="$(cat $workdir/hfgoactive.info)"
-    echo ${all_parameter[*]} | grep -qE "hfgoactive" && sendit=sendit || sendit=""
-    [[ $sendit == "sendit" ]] && curl -m 10 -sX POST "https://api.telegram.org/bot$token/sendMessage" -d "chat_id=$chat_id&text=$text" >/dev/null; sleep 3
+#    text="$(cat $workdir/hfgoactive.info)"
+#    echo ${all_parameter[*]} | grep -qE "hfgoactive" && sendit=sendit || sendit=""
+#    [[ $sendit == "sendit" ]] && curl -m 10 -sX POST "https://api.telegram.org/bot$token/sendMessage" -d "chat_id=$chat_id&text=$text" >/dev/null; sleep 3
     
     # otherinfo
     text="$(cat $workdir/otherinfo.info)"
