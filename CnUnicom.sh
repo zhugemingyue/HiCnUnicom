@@ -243,6 +243,31 @@ function liulactive() {
     curl -m 10 -X POST -sA "$UA" -e "$Referer" -b $workdir/cookie_liulactive -c $workdir/cookie_liulactive --data "productId=$productId&userLogin=$liulactiveuserLogin&ebCount=1000000&pageFrom=4" "https://m.client.10010.com/MyAccount/exchangeDFlow/exchange.htm?userLogin=$liulactiveuserLogin" | grep -B 1 "正在为您激活"
 }
 
+function libaollactive() {
+    # 我的礼包流量激活功能
+    echo ${all_parameter[*]} | grep -qE "libaollactive@[mwd]" || return 0
+    timeparId=$(echo ${all_parameter[*]} | grep -oE "libaollactive@[mwd]" | cut -f2 -d@)
+    choosenos=$(echo ${all_parameter[*]} | grep -oE "libaollactive@[mwd]@.*" | cut -f3 -d@)
+    # 依照参数m|w|d来判断是否执行
+    unset liulactive_run
+    [[ ${timeparId} == "m" ]] && [[ "$(date +%d)" == "01" ]] && libaollactive_run=true
+    [[ ${timeparId} == "w" ]] && [[ "$(date +%u)" == "1" ]]  && libaollactive_run=true
+    [[ ${timeparId} == "d" ]] && libaollactive_run=true
+    [[ "$libaollactive_run" == "true" ]] || return 0
+    # 依照参数choosenos来判断是否是指定号码执行,激活功能的参数全格式： libaollactive@d@13012341234-13112341234
+    unset libaollactive_only
+    [[ $choosenos != "" ]] && echo $choosenos | grep -qE "${username}" && libaollactive_only=true
+    [[ $choosenos == "" ]] && libaollactive_only=true
+    [[ "$libaollactive_only" == "true" ]] || return 0
+    # 激活请求
+    echo && echo starting libaollactive...
+    curl -m 10 -X POST -sA "$UA"  -b $workdir/cookie --data "typeScreenCondition=2&category=FFLOWPACKET&pageSign=1&CALLBACKURL=https%3A%2F%2Fm.client.10010.com%2FmyPrizeForActivity%2Fquerywinninglist.htm" http://m.client.10010.com/myPrizeForActivity/mygiftbag.htm >$workdir/libaollactive.log
+    libaollCode=$(echo $(cat $workdir/libaollactive.log | grep -m 1 'onclick="toDetailPage' | grep -oE "[0-9yh]+") | awk -F ' ' '{print $1}')
+    libaollID=$(echo $(cat $workdir/libaollactive.log | grep -m 1 'onclick="toDetailPage' | grep -oE "[0-9yh]+") | awk -F ' ' '{print $2}')    
+    libaollName=$(echo $(cat $workdir/libaollactive.log | grep -m 1 '<li>活动') | awk -F '活动：|</li>' '{print $2}' | tr -d '\n' | xxd -plain | sed 's/\(..\)/%\1/g' | tr a-z A-Z)
+    curl -m 10 -X POST -sA "$UA"  -b $workdir/cookie --data "activeCode=$libaollCode&prizeRecordID=$libaollID&activeName=$libaollName" http://m.client.10010.com/myPrizeForActivity/myPrize/activationFlowPackages.htm
+}
+
 function hfgoactive() {
     # 话费购活动，需传入参数 hfgoactive
     echo ${all_parameter[*]} | grep -qE "hfgoactive" || return 0
@@ -389,6 +414,7 @@ function main() {
         userlogin && userlogin_ook[u]=$(echo ${username:0:2}******${username:9}) || { userlogin_err[u]=$(echo ${username:0:2}******${username:9}); continue; }
         membercenter
         liulactive
+        libaollactive
         hfgoactive
         jifeninfo
         otherinfo
